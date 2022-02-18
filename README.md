@@ -46,7 +46,7 @@ We will learn how to use Python for forecasting time series data to predict new 
 
 
 # 1. NumPy
-NumPy is a numerical processing library that can efficiently handle large data sets stored as arrays. Later we will learn about Pandas, which is built directly off of the NumPy library. It provides (see [Repo](https://github.com/numpy/numpy)):
+NumPy is a numerical processing library that can efficiently handle large data sets stored as arrays (see [Glossary](https://numpy.org/doc/stable/glossary.html#term-little-endian)). Later we will learn about Pandas, which is built directly off of the NumPy library. It provides (see [Repo](https://github.com/numpy/numpy)):
 
 - A powerful N-dimensional array object
 - Sophisticated (broadcasting) functions
@@ -87,7 +87,10 @@ m = np.array(l)
 
 Note that NumPy broadcasts operations on arrays (see [Documentation](https://numpy.org/doc/stable/user/basics.broadcasting.html)). Generally, the smaller array is “broadcast” across the larger array so that they have compatible shapes. 
 
-NumPy operations are usually done on pairs of arrays on an element-by-element basis. In the simplest case, the two arrays must have exactly the same shape
+NumPy operations are usually done on pairs of arrays on an element-by-element basis. Conceptually we can prepend ones, until we have compatible shapes. See [mCoding Video](https://www.youtube.com/watch?v=oG1t3qlzq14). 
+
+It works with plus, minus, times, exponentiation, min/max, and many more element-wise
+operations.
 
 ## 1.2. Random Numbers
 
@@ -199,7 +202,22 @@ arr[arr>4]
 
 ## 1.4. NumPy Operations
 
-Continue here! 
+We can broadcast operations or choose an axis or axes along which the operations are computer. Example: 
+
+```python
+arr = np.arange(9).reshape(3,3)
+arr
+# array([[0, 1, 2],
+#        [3, 4, 5],
+#        [6, 7, 8]])
+
+# Determine the median along the rows
+m_arr = np.median(arr, axis=1).astype('i')
+m_arr
+# array([1, 4, 7], dtype=int32)
+```
+
+Note that we cast the elements of the resulting array to an integer (see [astype method](https://numpy.org/doc/stable/reference/generated/numpy.ndarray.astype.html)). The data type codes can be found in the [documentation](https://numpy.org/doc/stable/reference/generated/numpy.typename.html). Alternatively we can use the [NumPy data types](https://numpy.org/devdocs/user/basics.types.html). 
 
 # 2. Misc 
 
