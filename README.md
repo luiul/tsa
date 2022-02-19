@@ -21,16 +21,13 @@ We will learn how to use Python for forecasting time series data to predict new 
    2. Use Pandas and Statsmodels to visualize Time Series data
    3. Be able to use a wide variety of forecasting techniques on Time Series data
 2. Set Up and Installation
-   1. Install Anaconda and Python 
-   2. Set up Virtual Environment
-   3. Understand Jupyter Notebook
 3. NumPy Basics: Quick section on NumPy basics and how to manipulate data with it
 4. Pandas Basics: Pandas is used for data analysis and data exploration. We'll learn how to use this library since its fundamental to handling our data sources
 5. Pandas Visualization: Pandas also comes with a lot of built in visualization tools which we will explore to quickly view time series data on a chart
 6. Time Series with Pandas: After learning the Pandas Fundamentals we will focus on specialized tools within pandas specifically designed to work with time stamped data
 7. Time Series Analysis with Statsmodels: Statsmodels is a statistical library for Python that contains an entire library of time series statistical analysis tools. This section will be an introduction to use Statsmodels for basic time series analysis
 8. General Forecasting Models: In this section we'll dive deep into various forecasting models based on ARIMA (AutoRegressive Integrated Moving Averages)
-9. Deep Learning and Prophet: The final sections will show the latest state of the art methods for forecasting, including Recurrent Neural Networks and Facebook's Prophet library
+9.  Deep Learning and Prophet: The final sections will show the latest state of the art methods for forecasting, including Recurrent Neural Networks and Facebook's Prophet library
 
 </details>
 
@@ -42,7 +39,17 @@ We will learn how to use Python for forecasting time series data to predict new 
   - [1.2. Random Numbers](#12-random-numbers)
   - [1.3. Indexing and Selection](#13-indexing-and-selection)
   - [1.4. NumPy Operations](#14-numpy-operations)
-- [2. Misc](#2-misc)
+- [2. Pandas](#2-pandas)
+  - [2.1. Main Features](#21-main-features)
+  - [2.2. Series](#22-series)
+  - [2.3. DataFrames](#23-dataframes)
+  - [2.4. Indexing and Selecting Data](#24-indexing-and-selecting-data)
+    - [2.4.1. Boolean Indexing](#241-boolean-indexing)
+    - [2.4.2. Useful Methods for Indexing](#242-useful-methods-for-indexing)
+  - [2.5. Missing Data with Pandas](#25-missing-data-with-pandas)
+- [3. Misc](#3-misc)
+  - [3.1. Downgrading Jupyter Lab and Conda Packages](#31-downgrading-jupyter-lab-and-conda-packages)
+  - [3.2. If-Name-Equals_Main Idiom](#32-if-name-equals_main-idiom)
 
 
 # 1. NumPy
@@ -219,10 +226,294 @@ m_arr
 
 Note that we cast the elements of the resulting array to an integer (see [astype method](https://numpy.org/doc/stable/reference/generated/numpy.ndarray.astype.html)). The data type codes can be found in the [documentation](https://numpy.org/doc/stable/reference/generated/numpy.typename.html). Alternatively we can use the [NumPy data types](https://numpy.org/devdocs/user/basics.types.html). 
 
-# 2. Misc 
+# 2. Pandas
 
-We downgrade jupyter lab from 3.2 to 3.1 to make the contextual help less slow. 
+This section we'll learn about:
+
+- Series and DataFrames
+- Missing Data
+- GroupBy
+- Operations
+- Data I/0 (Input and Output)
+
+Note that the Documentation has a section on [Time series / date functionality](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#time-series-date-functionality). From its [Repo](https://github.com/pandas-dev/pandas): pandas is a Python package that provides fast, flexible, and expressive data structures designed to make working with "relational" or "labeled" data both easy and intuitive. It aims to be the fundamental high-level building block for doing practical, real world data analysis in Python. Additionally, it has the broader goal of becoming the most powerful and flexible open source data analysis / manipulation tool available in any language.
+
+## 2.1. Main Features
+
+- Easy handling of [**missing data**][missing-data] (represented as
+  `NaN`, `NA`, or `NaT`) in floating point as well as non-floating point data
+- Size mutability: columns can be [**inserted and
+  deleted**][insertion-deletion] from DataFrame and higher dimensional
+  objects
+- Automatic and explicit [**data alignment**][alignment]: objects can
+  be explicitly aligned to a set of labels, or the user can simply
+  ignore the labels and let `Series`, `DataFrame`, etc. automatically
+  align the data for you in computations
+- Powerful, flexible [**group by**][groupby] functionality to perform
+  split-apply-combine operations on data sets, for both aggregating
+  and transforming data
+- Make it [**easy to convert**][conversion] ragged,
+  differently-indexed data in other Python and NumPy data structures
+  into DataFrame objects
+- Intelligent label-based [**slicing**][slicing], [**fancy
+  indexing**][fancy-indexing], and [**subsetting**][subsetting] of
+  large data sets
+- Intuitive [**merging**][merging] and [**joining**][joining] data
+  sets
+- Flexible [**reshaping**][reshape] and [**pivoting**][pivot-table] of
+  data sets
+- [**Hierarchical**][mi] labeling of axes (possible to have multiple
+  labels per tick)
+- Robust IO tools for loading data from [**flat files**][flat-files]
+  (CSV and delimited), [**Excel files**][excel], [**databases**][db],
+  and saving/loading data from the ultrafast [**HDF5 format**][hdfstore]
+- [**Time series**][timeseries]-specific functionality: date range
+  generation and frequency conversion, moving window statistics,
+  date shifting and lagging
+
+
+ [missing-data]: https://pandas.pydata.org/pandas-docs/stable/user_guide/missing_data.html
+ [insertion-deletion]: https://pandas.pydata.org/pandas-docs/stable/user_guide/dsintro.html#column-selection-addition-deletion
+ [alignment]: https://pandas.pydata.org/pandas-docs/stable/user_guide/dsintro.html?highlight=alignment#intro-to-data-structures
+ [groupby]: https://pandas.pydata.org/pandas-docs/stable/user_guide/groupby.html#group-by-split-apply-combine
+ [conversion]: https://pandas.pydata.org/pandas-docs/stable/user_guide/dsintro.html#dataframe
+ [slicing]: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#slicing-ranges
+ [fancy-indexing]: https://pandas.pydata.org/pandas-docs/stable/user_guide/advanced.html#advanced
+ [subsetting]: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#boolean-indexing
+ [merging]: https://pandas.pydata.org/pandas-docs/stable/user_guide/merging.html#database-style-dataframe-or-named-series-joining-merging
+ [joining]: https://pandas.pydata.org/pandas-docs/stable/user_guide/merging.html#joining-on-index
+ [reshape]: https://pandas.pydata.org/pandas-docs/stable/user_guide/reshaping.html
+ [pivot-table]: https://pandas.pydata.org/pandas-docs/stable/user_guide/reshaping.html
+ [mi]: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#hierarchical-indexing-multiindex
+ [flat-files]: https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#csv-text-files
+ [excel]: https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#excel-files
+ [db]: https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#sql-queries
+ [hdfstore]: https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#hdf5-pytables
+ [timeseries]: https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#time-series-date-functionality
+
+## 2.2. Series
+
+A series is the basic building block of Pandas. It holds an **array** of information organized by an **(named) Index**.
+
+NumPy array has data with an index: 
+
+| index | data |
+| ----- | ---- |
+| 0     | 123  |
+| 1     | 456  |
+| 2     | 789  |
+
+Series is built on top of a NumPy array and can have a named index. 
+
+| index | **named_index** | data |
+| ----- | --------------- | ---- |
+| 0     | **A**           | 123  |
+| 1     | **B**           | 456  |
+| 2     | **C**           | 789  |
+
+Note that a pandas Series takes in **data** and an **index**. 
+
+```python
+my_series = pd.Series(data=[1,2,3], index=list('ABC'))
+```
+We can broadcast operations directly on Series based on the index (position), for example: 
+
+```python
+s1 = pd.Series(data=[1,2,3], index=list('ABC'))
+s2 = pd.Series(data=[4,5,6,7,8], index=list('ABCDE'))
+s1 + s2
+# A    5.0
+# B    7.0
+# C    NaN
+# D    NaN
+# E    NaN
+# dtype: float64
+
+s1.iloc[0]
+# 1
+s1.loc['A']
+# 1
+```
+
+## 2.3. DataFrames
+
+A DataFrame is simply multiple series that share the same index. Two-dimensional, size-mutable, potentially heterogeneous tabular data. Data structure also contains labeled axes (rows and columns). Arithmetic operations align on both row and column labels. Can be thought of as a dict-like container for Series objects. The primary pandas data structure (see [Documentation](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html)). Example: 
+
+```python
+# Create a 2-dim NumPy array
+arr = np.arange(1,10).reshape(3,3)
+arr
+# array([[1, 2, 3],
+#        [4, 5, 6],
+#        [7, 8, 9]])
+
+# Create DataFrame (2-dim data structure) 
+# The rows in the 2-dim array become the rows of the DataFrame
+# The index here is integer position based
+df = pd.DataFrame(data = arr)
+df
+#  	0 	1 	2
+# 0 	1 	2 	3
+# 1 	4 	5 	6
+# 2 	7 	8 	9
+
+# The index can also be label based
+# We can also named the columns (Series in the DataFrame)
+pd.DataFrame(data = d, columns = list('ABC'), index=list('XYZ'))
+#     A 	B 	C
+# X 	1 	2 	3
+# Y 	4 	5 	6
+# Z 	7 	8 	9
+```
+
+The axis labeling information in pandas objects serves many purposes:
+
+- Identifies data (i.e. provides metadata) using known indicators, important for analysis, visualization, and interactive console display
+- Enables automatic and explicit data alignment
+- Allows intuitive getting and setting of subsets of the data set
+
+Another example: 
+
+```python
+rng = np.random.default_rng(42)
+m = rng.standard_normal((5,4))
+m
+
+pd.DataFrame(data=m, index=list('ABCDE'), columns=list('WXYZ'))
+#        W 	            X 	      Y 	         Z
+# A 	0.304717 	-1.039984 	0.750451 	0.940565
+# B 	-1.951035 	-1.302180 	0.127840 	-0.316243
+# C 	-0.016801 	-0.853044 	0.879398 	0.777792
+# D 	0.066031 	1.127241 	0.467509 	-0.859292
+# E 	0.368751 	-0.958883 	0.878450 	-0.049926
+```
+
+## 2.4. Indexing and Selecting Data
+
+We can index and slice data (label based or integer position based) in the data frame (see [Documentation](https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html)). 
+
+| Object Type | Indexers                           |
+| ----------- | ---------------------------------- |
+| Series      | s.loc[indexer]                     |
+| DataFrame   | df.loc[row_indexer,column_indexer] |
+
+If we're interested in getting the columns, we use the basic indexing with `[]`. 
+
+| Object Type | Selection      | Return Value Type               |
+| ----------- | -------------- | ------------------------------- |
+| Series      | series[label]  | scalar value                    |
+| DataFrame   | frame[colname] | Series corresponding to colname |
+
+```python
+# label based slicing
+df.loc[::,::]
+# integer position based slicing
+df.iloc[::,::]
+
+# If we slice the DataFrame, we see that it consists of J Series, J = len(columns)
+type(df.loc[::,'W'])
+# pandas.core.series.Series
+
+# We can also pass a list or array of labels
+df.loc[::,['W','Z']]
+```
+
+### 2.4.1. Boolean Indexing
+
+Another common operation is the use of boolean vectors to filter the data. The operators are: `|` for or, `&` for and, and `~` for not. These must be grouped by using parentheses. Example: 
+
+
+```python
+# Change value in cell [A,X] to one
+df.loc['A','X'] = 1
+# Create filter, return cells where value is greater than zero
+cond = df > 0
+# Filter DataFrame and drop NA cells
+df[crit].dropna(axis='index')
+# 	W 	X 	Y 	Z
+# A 	0.304717 	1.0 	0.750451 	0.940565
+```
+
+From [Documentation](https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#boolean-indexing): you may select rows from a DataFrame using a boolean vector the same length as the DataFrame’s index (for example, something derived from one of the columns of the DataFrame):
+
+```python
+cond = df['W'] > 0
+df[crit]
+# or
+df.loc[crit,::]
+# 	      W 	         X           Y      	Z
+# A 	0.304717 	-1.039984 	0.750451 	0.940565
+# D 	0.066031 	1.127241 	0.467509 	-0.859292
+# E 	0.368751 	-0.958883 	0.878450 	-0.049926
+```
+
+### 2.4.2. Useful Methods for Indexing
+
+We can reset and set the index of the DataFrame. 
+
+```python
+rng = np.random.default_rng(42)
+data = rng.standard_normal((5,4))
+data
+# array([[ 0.30471708, -1.03998411,  0.7504512 ,  0.94056472],
+#        [-1.95103519, -1.30217951,  0.1278404 , -0.31624259],
+#        [-0.01680116, -0.85304393,  0.87939797,  0.77779194],
+#        [ 0.0660307 ,  1.12724121,  0.46750934, -0.85929246],
+#        [ 0.36875078, -0.9588826 ,  0.8784503 , -0.04992591]])
+idx = list('ABCDE')
+cols = list('WXYZ')
+df = pd.DataFrame(data=data, index=idx, columns=cols)
+df
+#           W         X         Y         Z
+# A  0.304717 -1.039984  0.750451  0.940565
+# B -1.951035 -1.302180  0.127840 -0.316243
+# C -0.016801 -0.853044  0.879398  0.777792
+# D  0.066031  1.127241  0.467509 -0.859292
+# E  0.368751 -0.958883  0.878450 -0.049926
+
+# Reset index to default integer position based index
+df.reset_index(inplace=True)
+# Rename old index
+df.rename({'index':'old_index'},axis=1,inplace=True)
+# Create data for the new index
+new_index = 'AA BB CC DD EE'.split()
+# Assign data to new column
+df['new_index'] = new_index
+# Set new index
+df.set_index('new_index',inplace=True)
+df
+#           old_index         W         X         Y         Z
+# new_index                                                  
+# AA                A  0.304717 -1.039984  0.750451  0.940565
+# BB                B -1.951035 -1.302180  0.127840 -0.316243
+# CC                C -0.016801 -0.853044  0.879398  0.777792
+# DD                D  0.066031  1.127241  0.467509 -0.859292
+# EE                E  0.368751 -0.958883  0.878450 -0.049926
+```
+
+## 2.5. Missing Data with Pandas
+
+Continue here! 
+
+
+# 3. Misc 
+
+## 3.1. Downgrading Jupyter Lab and Conda Packages
+
+We downgrade jupyter lab from 3.2 to 3.1 to increase contextual help performance. 
 
 ```shell
 conda install -c conda-forge jupyterlab=3.1.19
+```
+
+## 3.2. If-Name-Equals_Main Idiom 
+
+From [video](https://www.youtube.com/watch?v=g_wlZ9IhbTs). We should be using the following idiom in all python (non-library) scripts: 
+
+```python
+def main(): 
+	print('Hello World')
+
+if __name__ == '__main__': 
+	main()
 ```
