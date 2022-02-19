@@ -14,7 +14,7 @@ We will learn how to use Python for forecasting time series data to predict new 
 ## Course Curriculum
 
 <details>
-<summary>Click here to see Course Curriculum</summary>
+<summary>Course Curriculum</summary>
 
 1. Course Goals
    1. Understand how to use Python to work with Time Series data
@@ -33,6 +33,10 @@ We will learn how to use Python for forecasting time series data to predict new 
 
 <!-- omit in toc -->
 ## Table of Contents
+
+<details>
+<summary>Table of Contents</summary>
+
 <!-- toc here -->
 - [1. NumPy](#1-numpy)
   - [1.1. Broadcasting](#11-broadcasting)
@@ -51,6 +55,7 @@ We will learn how to use Python for forecasting time series data to predict new 
   - [3.1. Downgrading Jupyter Lab and Conda Packages](#31-downgrading-jupyter-lab-and-conda-packages)
   - [3.2. If-Name-Equals_Main Idiom](#32-if-name-equals_main-idiom)
 
+</details>
 
 # 1. NumPy
 NumPy is a numerical processing library that can efficiently handle large data sets stored as arrays (see [Glossary](https://numpy.org/doc/stable/glossary.html#term-little-endian)). Later we will learn about Pandas, which is built directly off of the NumPy library. It provides (see [Repo](https://github.com/numpy/numpy)):
