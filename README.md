@@ -51,9 +51,9 @@ We will learn how to use Python for forecasting time series data to predict new 
     - [2.4.1. Boolean Indexing](#241-boolean-indexing)
     - [2.4.2. Useful Methods for Indexing](#242-useful-methods-for-indexing)
   - [2.5. Missing Data with Pandas](#25-missing-data-with-pandas)
+  - [2.6. Group By Operations](#26-group-by-operations)
+  - [2.7. Common Operations](#27-common-operations)
 - [3. Misc](#3-misc)
-  - [3.1. Downgrading Jupyter Lab and Conda Packages](#31-downgrading-jupyter-lab-and-conda-packages)
-  - [3.2. If-Name-Equals_Main Idiom](#32-if-name-equals_main-idiom)
 
 </details>
 
@@ -498,12 +498,107 @@ df
 
 ## 2.5. Missing Data with Pandas
 
-Continue here! 
+We have three options: 
 
+- Keep the missing data (NaN), if the forecasting method can handle it
+- Drop the missing data (the entire row including the timestamp
+- Fill in the missing data with some value (best estimated guess)
+
+```python
+series_dict = dict(A=[1,2,np.nan],B=[5,np.nan,np.nan],C=[1,2,3])
+df = pd.DataFrame(series_dict)
+df
+#      A    B  C
+# 0  1.0  5.0  1
+# 1  2.0  NaN  2
+# 2  NaN  NaN  3
+df.dropna()
+#      A    B  C
+# 0  1.0  5.0  1
+df.dropna(axis=1)
+#    C
+# 0  1
+# 1  2
+# 2  3
+
+# Drop if the row has two or more NAs
+df.dropna(thresh=2)
+#      A    B  C
+# 0  1.0  5.0  1
+# 1  2.0  NaN  2
+
+df.fillna('fill_value')
+#             A           B  C
+# 0         1.0         5.0  1
+# 1         2.0  fill_value  2
+# 2  fill_value  fill_value  3
+
+df.fillna(method='pad')
+#      A    B  C
+# 0  1.0  5.0  1
+# 1  2.0  5.0  2
+# 2  2.0  5.0  3
+```
+
+## 2.6. Group By Operations
+
+Often you may want to perform an analysis based off the value of a specific column, meaning you want to group together other columns based off another. In order to do this, we to perform 3 steps: 
+
+1. Split / Group 
+2. Apply
+3. Combine
+
+Pandas will automatically make the grouped by column the index of the new resulting DataFrame. Example: 
+
+
+```python
+data = dict(Company='GOOG GOOG MSFT MSFT FB FB'.split(),
+            Person='Sam Charlie Amy Vanessa Carl Sarah'.split(),
+            Sales=[200, 120, 340, 124, 243, 350])
+data
+# {'Company': ['GOOG', 'GOOG', 'MSFT', 'MSFT', 'FB', 'FB'],
+#  'Person': ['Sam', 'Charlie', 'Amy', 'Vanessa', 'Carl', 'Sarah'],
+#  'Sales': [200, 120, 340, 124, 243, 350]}
+df = pd.DataFrame(data)
+df
+#   Company   Person  Sales
+# 0    GOOG      Sam    200
+# 1    GOOG  Charlie    120
+# 2    MSFT      Amy    340
+# 3    MSFT  Vanessa    124
+# 4      FB     Carl    243
+# 5      FB    Sarah    350
+
+# Split the DataFrame
+df.groupby('Company')
+# <pandas.core.groupby.generic.DataFrameGroupBy object at 0x7fe9c704f7d0>
+
+# Apply aggregate method or function call and combine
+df.groupby('Company').describe()
+#         Sales                                                        
+#         count   mean         std    min     25%    50%     75%    max
+# Company                                                              
+# FB        2.0  296.5   75.660426  243.0  269.75  296.5  323.25  350.0
+# GOOG      2.0  160.0   56.568542  120.0  140.00  160.0  180.00  200.0
+# MSFT      2.0  232.0  152.735065  124.0  178.00  232.0  286.00  340.0
+
+# We can also sort by a multi-index column
+df.groupby('Company').describe().sort_values([('Sales','mean')])
+#         Sales                                                        
+#         count   mean         std    min     25%    50%     75%    max
+# Company                                                              
+# GOOG      2.0  160.0   56.568542  120.0  140.00  160.0  180.00  200.0
+# MSFT      2.0  232.0  152.735065  124.0  178.00  232.0  286.00  340.0
+# FB        2.0  296.5   75.660426  243.0  269.75  296.5  323.25  350.0
+```
+
+## 2.7. Common Operations
+
+Continue here! 
 
 # 3. Misc 
 
-## 3.1. Downgrading Jupyter Lab and Conda Packages
+**Downgrading Jupyter Lab and Conda Packages**
 
 We downgrade jupyter lab from 3.2 to 3.1 to increase contextual help performance. 
 
@@ -511,7 +606,7 @@ We downgrade jupyter lab from 3.2 to 3.1 to increase contextual help performance
 conda install -c conda-forge jupyterlab=3.1.19
 ```
 
-## 3.2. If-Name-Equals_Main Idiom 
+**If-Name-Equals_Main Idiom**
 
 From [video](https://www.youtube.com/watch?v=g_wlZ9IhbTs). We should be using the following idiom in all python (non-library) scripts: 
 
@@ -522,3 +617,7 @@ def main():
 if __name__ == '__main__': 
 	main()
 ```
+
+**Dictionaries**
+
+6 Different ways to create Dictionaries ([source](https://thispointer.com/python-6-different-ways-to-create-dictionaries/))
