@@ -1,6 +1,6 @@
 <!-- title: Time Series Analysis and Forecasting with Python -->
 <!-- omit in toc -->
-# Time Series Analysis and Forecasting with Python
+# Time Series Analysis and Forecasting with Python 🎯
 
 <!-- omit in toc -->
 ## Description
@@ -53,7 +53,9 @@ We will learn how to use Python for forecasting time series data to predict new 
   - [2.5. Missing Data with Pandas](#25-missing-data-with-pandas)
   - [2.6. Group By Operations](#26-group-by-operations)
   - [2.7. Common Operations](#27-common-operations)
-- [3. Misc](#3-misc)
+  - [2.8. Data IO](#28-data-io)
+- [3. Data Visualization with Pandas](#3-data-visualization-with-pandas)
+- [4. Misc](#4-misc)
 
 </details>
 
@@ -594,9 +596,160 @@ df.groupby('Company').describe().sort_values([('Sales','mean')])
 
 ## 2.7. Common Operations
 
-Continue here! 
+Methods: 
 
-# 3. Misc 
+- unique
+- value_counts(normalize=False)
+- apply 
+- drop
+- info
+- describe
+- sort_values
+
+Attributes: 
+
+- index 
+- columns
+
+## 2.8. Data IO
+
+See [Documentation](https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html). Example: 
+
+```python
+l = pd.read_html(
+    'https://www.fdic.gov/resources/resolutions/bank-failures/failed-bank-list/'
+)
+len(l)
+# 1 
+df = l[0]
+df.head(2)
+#                 Bank NameBank           CityCity StateSt  CertCert  \
+# 0           Almena State Bank             Almena      KS     15426   
+# 1  First City Bank of Florida  Fort Walton Beach      FL     16748   
+
+#      Acquiring InstitutionAI Closing DateClosing  FundFund  
+# 0                Equity Bank    October 23, 2020     10538  
+# 1  United Fidelity Bank, fsb    October 16, 2020     10537  
+```
+
+# 3. Data Visualization with Pandas
+
+See [Documentation](https://pandas.pydata.org/pandas-docs/stable/user_guide/visualization.html#other-plots). 
+
+**Histogram** of a **column**: 
+
+- x-axis = value of num_observation along column
+- y-axis = frequency of value of num_observation
+
+```python
+df1['A'].plot.hist()
+# We can customize the histogram, for example: 
+df1['A'].plot.hist(bins=20, edgecolor='k', grid=True).autoscale(enable=True,
+                                                                axis='both',
+                                                                tight=True)
+```
+
+**Bar Plot** of **dataframe**: 
+
+- x-axis = index (treated as a cat_observation)
+- y-axis = value of num_observation
+- color = columns of dataframe
+
+We can also stack the bars with the stacked param. 
+
+```python
+df2.plot.bar(stacked=True,grid=True)
+```
+
+**Line Plot** of **dataframe** or **column**: 
+
+- x-axis = index (treated as a num_observation)
+- y-axis = value of num_observation
+- color = columns of dataframe
+
+Information is displayed as a series of data points called 'markers' connected by straight line segments. 
+
+```python
+df2.plot.line()
+# Customize
+df2.plot.line(y='a', figsize=(10, 4), grid=True, lw=3).autoscale(enable=True,
+                                                                 axis='both',
+                                                                 tight=True)
+```
+
+**Area Plot** of dataframe or column: 
+
+- x-axis = index
+- y-axis = stacked num_observations
+- color = columns of dataframe
+
+Cumme stacked line plots. 
+
+```python
+# Cumme line plots; index is the x-axis of the plot
+df2.plot.area(figsize=(10, 4), grid=True, alpha=0.5).autoscale(enable=True,
+                                                               axis='both',
+                                                               tight=True)
+# Overlapping area plots of singular columns; not very useful  
+df2.plot.area(figsize=(10, 4), grid=True, alpha=0.5,
+              stacked=False).autoscale(enable=True, axis='both', tight=True)
+```
+
+**Scatter Plot** of **two num_columns of a dataframe**: We visualize the following data for each marker / record (along 0-axis): 
+
+- x-axis = num_observation_1
+- y-axis = num_observation_2
+- color = num_observation_3 
+- size = num_observation_4
+
+```python
+df1.plot.scatter(x='A',
+                 y='B',
+                 s=df1['C'] * 50,
+                 c='D',
+                 alpha=.5,
+                 cmap='coolwarm')
+```
+
+**Box Plot** of **dataframe** of **column**: 
+
+Graphical representation of a [Five-number summary](https://en.wikipedia.org/wiki/Five-number_summary) with some additional information: 
+
+- 1. sample minimum 
+- 2. lower / first quartile 
+- 3. median / second quartile 
+- 4. upper / third quartile 
+- 5. sample maximum
+- IQR = Q_3 - Q_1
+- the whiskers
+- outliers
+
+```python
+df2.head(3)
+#           a         b         c         d  e
+# 0  0.039762  0.218517  0.103423  0.957904  x
+# 1  0.937288  0.041567  0.899125  0.977680  y
+# 2  0.780504  0.008948  0.557808  0.797510  x
+
+print(df2['e'].unique())
+# ['x' 'y' 'z']
+
+# Basic boxplot
+df2.boxplot()
+# x-axis: columns 
+
+# We can group by a categorical column
+# 
+df2.boxplot(by='e')
+
+
+df = pd.DataFrame(np.random.randn(10, 2), columns=['Col1', 'Col2'])
+df['X'] = pd.Series(['A', 'A', 'A', 'A', 'A', 'B', 'B', 'B'])
+df
+
+```
+
+# 4. Misc 
 
 **Downgrading Jupyter Lab and Conda Packages**
 
