@@ -1,6 +1,6 @@
 <!-- title: Time Series Analysis and Forecasting with Python -->
 <!-- omit in toc -->
-# Time Series Analysis and Forecasting with Python 🎯
+# 🎯 Time Series Analysis and Forecasting with Python
 
 <!-- omit in toc -->
 ## Description
@@ -55,7 +55,9 @@ We will learn how to use Python for forecasting time series data to predict new 
   - [2.7. Common Operations](#27-common-operations)
   - [2.8. Data IO](#28-data-io)
 - [3. Data Visualization with Pandas](#3-data-visualization-with-pandas)
-- [4. Misc](#4-misc)
+  - [3.1. Customizing Plots with Pandas](#31-customizing-plots-with-pandas)
+- [4. Time Series with Pandas](#4-time-series-with-pandas)
+- [5. Misc](#5-misc)
 
 </details>
 
@@ -636,10 +638,11 @@ df.head(2)
 
 See [Documentation](https://pandas.pydata.org/pandas-docs/stable/user_guide/visualization.html#other-plots). 
 
-**Histogram** of a **column**: 
+**Histogram** of **dataframe** or **column**: 
 
 - x-axis = value of num_observation along column
-- y-axis = frequency of value of num_observation
+- y-axis = its frequency in dataframe
+- color = columns of dataframe (note that a KDE might be a better choice to compare distributions)
 
 ```python
 df1['A'].plot.hist()
@@ -652,7 +655,7 @@ df1['A'].plot.hist(bins=20, edgecolor='k', grid=True).autoscale(enable=True,
 **Bar Plot** of **dataframe**: 
 
 - x-axis = index (treated as a cat_observation)
-- y-axis = value of num_observation
+- y-axis = value of num_observation along column
 - color = columns of dataframe
 
 We can also stack the bars with the stacked param. 
@@ -664,7 +667,7 @@ df2.plot.bar(stacked=True,grid=True)
 **Line Plot** of **dataframe** or **column**: 
 
 - x-axis = index (treated as a num_observation)
-- y-axis = value of num_observation
+- y-axis = value of num_observation along column
 - color = columns of dataframe
 
 Information is displayed as a series of data points called 'markers' connected by straight line segments. 
@@ -677,7 +680,7 @@ df2.plot.line(y='a', figsize=(10, 4), grid=True, lw=3).autoscale(enable=True,
                                                                  tight=True)
 ```
 
-**Area Plot** of dataframe or column: 
+**Area Plot** of **dataframe** or **column**: 
 
 - x-axis = index
 - y-axis = stacked num_observations
@@ -695,7 +698,7 @@ df2.plot.area(figsize=(10, 4), grid=True, alpha=0.5,
               stacked=False).autoscale(enable=True, axis='both', tight=True)
 ```
 
-**Scatter Plot** of **two num_columns of a dataframe**: We visualize the following data for each marker / record (along 0-axis): 
+**Scatter Plot** of **two num_columns of a dataframe** (as param): We visualize the following data for each marker / record (along 0-axis): 
 
 - x-axis = num_observation_1
 - y-axis = num_observation_2
@@ -711,15 +714,24 @@ df1.plot.scatter(x='A',
                  cmap='coolwarm')
 ```
 
-**Box Plot** of **dataframe** of **column**: 
+**Box Plot** of **dataframe** of **column**: Graphical representation of a Five-number summary with some additional information: 
 
-Graphical representation of a [Five-number summary](https://en.wikipedia.org/wiki/Five-number_summary) with some additional information: 
+- x-axis = num_column
+- y-axis = statistics of num_observations along the column
 
-- 1. sample minimum 
-- 2. lower / first quartile 
-- 3. median / second quartile 
-- 4. upper / third quartile 
-- 5. sample maximum
+If we group by a cat_column then we get: 
+
+- box plot for each column 
+- x-axis = value of cat_observation in group-by-column
+- y-axis = statistics of num_observation along the column of the group
+
+Note: The [Five-number summary](https://en.wikipedia.org/wiki/Five-number_summary) consists of: 
+
+- (1) sample minimum 
+- (2) lower / first quartile 
+- (3) median / second quartile 
+- (4) upper / third quartile 
+- (5) sample maximum
 - IQR = Q_3 - Q_1
 - the whiskers
 - outliers
@@ -736,20 +748,82 @@ print(df2['e'].unique())
 
 # Basic boxplot
 df2.boxplot()
-# x-axis: columns 
 
-# We can group by a categorical column
-# 
+# We can group by values of a categorical column
 df2.boxplot(by='e')
-
-
-df = pd.DataFrame(np.random.randn(10, 2), columns=['Col1', 'Col2'])
-df['X'] = pd.Series(['A', 'A', 'A', 'A', 'A', 'B', 'B', 'B'])
-df
-
 ```
 
-# 4. Misc 
+Example from the documentation: 
+
+```python
+# Instantiate RNG with seed
+rng = np.random.default_rng(42)
+# Create dataframe with two num_columns
+df = pd.DataFrame(rng.standard_normal((10,2)),columns=['Col1', 'Col2'])
+# Add a third cat_column
+df['Col3'] = pd.Series(['A', 'A', 'A', 'A', 'A', 'B', 'B', 'B'])
+df
+#        Col1      Col2 Col3
+# 0  0.304717 -1.039984    A
+# 1  0.750451  0.940565    A
+# 2 -1.951035 -1.302180    A
+# 3  0.127840 -0.316243    A
+# 4 -0.016801 -0.853044    A
+# 5  0.879398  0.777792    B
+# 6  0.066031  1.127241    B
+# 7  0.467509 -0.859292    B
+# 8  0.368751 -0.958883  NaN
+# 9  0.878450 -0.049926  NaN
+
+boxplot = df.boxplot(by='Col3', figsize=(10, 4))
+```
+The result is two subplots (one for each num_column) with two box plots each (one for cat_observation value in the cat_column) with statistics from each group (Col1, CatA & Col1, CatB + Col2, CatA & Col2, CatB)
+
+**KDE** of **dataframe** of **column**:
+
+- x-axis = value of num_observation along column
+- y-axis = approx. of PDF for num_column
+- color = columns of dataframe
+
+```python
+df2.plot.kde()
+```
+
+**Hexbin** of  
+
+Motivation: in a scatter plot with too many points, we cannot see how many are stacked on top of each other. Hexbin plots can be a useful alternative to scatter plots if your data are too dense to plot each point individually.
+
+- x-axis = num_observation_1
+- y-axis = num_observation_2
+
+```python
+# Instantiate RNG with seed
+rng = np.random.default_rng(42)
+df = pd.DataFrame(data=rng.standard_normal((1_000, 2)), columns=list('ab'))
+df.head(3)
+#           a         b
+# 0  0.304717 -1.039984
+# 1  0.750451  0.940565
+# 2 -1.951035 -1.302180
+
+df.plot.hexbin(x='a',y='b',gridsize=25,cmap='Oranges')
+```
+
+## 3.1. Customizing Plots with Pandas
+
+```python
+ax = df2[list('ac')].plot(figsize=(10, 3), ls=':', lw=3, title='My titel')
+# c = 'blue'
+ax.set(xlabel='My x label', ylabel='My y label')
+ax.legend(bbox_to_anchor=(1, 1))
+# loc = 0
+```
+
+# 4. Time Series with Pandas
+
+Continue here!
+
+# 5. Misc 
 
 **Downgrading Jupyter Lab and Conda Packages**
 
