@@ -57,6 +57,8 @@ We will learn how to use Python for forecasting time series data to predict new 
 - [3. Data Visualization with Pandas](#3-data-visualization-with-pandas)
   - [3.1. Customizing Plots with Pandas](#31-customizing-plots-with-pandas)
 - [4. Time Series with Pandas](#4-time-series-with-pandas)
+  - [4.1. Datetime index](#41-datetime-index)
+  - [4.2. Time Resampling](#42-time-resampling)
 - [5. Misc](#5-misc)
 
 </details>
@@ -821,7 +823,85 @@ ax.legend(bbox_to_anchor=(1, 1))
 
 # 4. Time Series with Pandas
 
-Continue here!
+In this section we will discuss:
+
+- Date Time Index Basics
+- Time Resampling
+- Time shifting
+- Rolling and Expanding
+- Time Series Visualization
+- Time Series Project Exercise
+
+## 4.1. Datetime index
+
+We start by creating datetime objects: 
+
+```python
+from datetime import datetime
+datetime(year, month, day[, hour[, minute[, second[, microsecond[,tzinfo]]]]])
+```
+
+NumPy handles dates more efficiently than Python's datetime format. See [Documentation](https://numpy.org/doc/stable/reference/arrays.datetime.html). 
+
+```python
+# This is treated as a normal array
+np.array('2020-03-15 2020-03-16 2020-03-17'.split())
+# array(['2020-03-15', '2020-03-16', '2020-03-17'], dtype='<U10')
+
+# This is an array of datetime64 objects with day [D] precision
+np.array('2020-03-15 2020-03-16 2020-03-17'.split(), dtype='datetime64')
+#array(['2020-03-15', '2020-03-16', '2020-03-17'], dtype='datetime64[D]')
+
+# We can also create a range of datetime objects
+np.arange('2018-06-01', '2018-06-23', 7, dtype='datetime64[D]')
+# array(['2018-06-01', '2018-06-08', '2018-06-15', '2018-06-22'],
+#       dtype='datetime64[D]')
+```
+
+Pandas also has methods to work with datetime data. See [Documentation](https://pandas.pydata.org/docs/reference/api/pandas.date_range.html). Pandas has a specialized DateTimeIndex to work with datetime objects. 
+
+```python
+pd.to_datetime(['1/2/2018', '1/3/2018'])
+# DatetimeIndex(['2018-01-02', '2018-01-03'], dtype='datetime64[ns]', freq=None)
+
+pd.to_datetime(['2/1/2018', '3/1/2018'])
+# DatetimeIndex(['2018-02-01', '2018-03-01'], dtype='datetime64[ns]', freq=None)
+
+# We can specify the format to bypass Pandas inferring it it 
+pd.to_datetime(['2/1/2018', '3/1/2018'], format='%d/%m/%Y')
+# DatetimeIndex(['2018-01-02', '2018-01-03'], dtype='datetime64[ns]', freq=None)
+
+pd.date_range('2020-01-01', periods=7, freq='D')
+# DatetimeIndex(['2020-01-01', '2020-01-02', '2020-01-03', '2020-01-04',
+#                '2020-01-05', '2020-01-06', '2020-01-07'],
+#               dtype='datetime64[ns]', freq='D')
+```
+
+Note that we use `arange` to specify the step size and type, and `date_range` to specify the number of elements (periods) and frequency (type). 
+
+```python
+data = rng.standard_normal((3, 2))
+cols = list('AB')
+idx = pd.date_range('2020-01-01', periods=3, freq='D')
+
+df = pd.DataFrame(data, index=idx, columns=cols)
+df
+#                    A         B
+# 2020-01-01  0.066031  1.127241
+# 2020-01-02  0.467509 -0.859292
+# 2020-01-03  0.368751 -0.958883
+
+df.index
+# DatetimeIndex(['2020-01-01', '2020-01-02', '2020-01-03'], dtype='datetime64[ns]', freq='D')
+df.index.min()
+# Timestamp('2020-01-03 00:00:00', freq='D')
+df.index.argmin()
+# 0
+```
+
+## 4.2. Time Resampling
+
+Continue here
 
 # 5. Misc 
 
