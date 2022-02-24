@@ -59,6 +59,9 @@ We will learn how to use Python for forecasting time series data to predict new 
 - [4. Time Series with Pandas](#4-time-series-with-pandas)
   - [4.1. Datetime index](#41-datetime-index)
   - [4.2. Time Resampling](#42-time-resampling)
+  - [4.3. Time Shifting](#43-time-shifting)
+  - [4.4. Windowing Operations](#44-windowing-operations)
+  - [4.5. Visualizing Time Series Data](#45-visualizing-time-series-data)
 - [5. Misc](#5-misc)
 
 </details>
@@ -596,6 +599,12 @@ df.groupby('Company').describe().sort_values([('Sales','mean')])
 # GOOG      2.0  160.0   56.568542  120.0  140.00  160.0  180.00  200.0
 # MSFT      2.0  232.0  152.735065  124.0  178.00  232.0  286.00  340.0
 # FB        2.0  296.5   75.660426  243.0  269.75  296.5  323.25  350.0
+
+# Custom describe method with range
+def describe2(df):
+    df_res = df.describe()
+    df_res.loc['range'] = df_res.loc['max'] - df_res.loc['min']
+    return df_res
 ```
 
 ## 2.7. Common Operations
@@ -692,8 +701,7 @@ Cumme stacked line plots.
 
 ```python
 # Cumme line plots; index is the x-axis of the plot
-df2.plot.area(figsize=(10, 4), grid=True, alpha=0.5).autoscale(enable=True,
-                                                               axis='both',
+df2.plot.area(figsize=(10, 4), grid=True, alpha=0.5).autoscale(axis='both',
                                                                tight=True)
 # Overlapping area plots of singular columns; not very useful  
 df2.plot.area(figsize=(10, 4), grid=True, alpha=0.5,
@@ -901,7 +909,201 @@ df.index.argmin()
 
 ## 4.2. Time Resampling
 
-Continue here
+Similar to a group operation but based on time frequency. See [Time Series / Date Documentation](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html) and [thread](https://stackoverflow.com/questions/17001389/pandas-resample-documentation). Also see [Offset Alias](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases), [Anchored Offsets](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#anchored-offsets), and [Resampling](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#resampling). Refer to the [Resample Page](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.resample.html). Some aliases can be found in the course material
+
+| Alias    | Description                                      |
+| -------- | ------------------------------------------------ |
+| B        | business day frequency                           |
+| C        | custom business day frequency                    |
+| D        | calendar day frequency                           |
+| W        | weekly frequency                                 |
+| M        | month end frequency                              |
+| SM       | semi-month end frequency (15th and end of month) |
+| BM       | business month end frequency                     |
+| CBM      | custom business month end frequency              |
+| MS       | month start frequency                            |
+| SMS      | semi-month start frequency (1st and 15th)        |
+| BMS      | business month start frequency                   |
+| CBMS     | custom business month start frequency            |
+| Q        | quarter end frequency                            |
+| BQ       | business quarter end frequency                   |
+| QS       | quarter start frequency                          |
+| BQS      | business quarter start frequency                 |
+| A, Y     | year end frequency                               |
+| BA, BY   | business year end frequency                      |
+| AS, YS   | year start frequency                             |
+| BAS, BYS | business year start frequency                    |
+| BH       | business hour frequency                          |
+| H        | hourly frequency                                 |
+| T, min   | minutely frequency                               |
+| S        | secondly frequency                               |
+| L, ms    | milliseconds                                     |
+| U, us    | microseconds                                     |
+| N        | nanoseconds                                      |
+
+```python
+# Instantiate the dataframe with a named index
+df = pd.read_csv(file, index_col='Date', parse_dates=True)
+# If we do not pass the parse_dates parameter, use the following.
+# df.index = pd.to_datetime(df.index)
+
+# daily -> yearly mean
+df.resample(rule='A').mean()
+#                 Close        Volume
+# Date                               
+# 2015-12-31  50.078100  8.649190e+06
+# 2016-12-31  53.891732  9.300633e+06
+# 2017-12-31  55.457310  9.296078e+06
+# 2018-12-31  56.870005  1.122883e+07
+
+# daily close price -> mean yearly close price
+df['Close'].resample('A').mean()
+# Date
+# 2015-12-31    50.078100
+# 2016-12-31    53.891732
+# 2017-12-31    55.457310
+# 2018-12-31    56.870005
+# Freq: A-DEC, Name: Close, dtype: float64
+df['Close'].resample('A').mean().plot.bar()
+```
+
+We use `matplotlib.pyplot` when we want to customize the plot. See [Documentation](https://matplotlib.org/stable/api/pyplot_summary.html); [Bar Plot Page](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.bar.html). Pyplot also offers a [Tutorial](https://matplotlib.org/stable/tutorials/introductory/pyplot.html#sphx-glr-tutorials-introductory-pyplot-py). Also see this [thread](https://stackoverflow.com/questions/14946371/editing-the-date-formatting-of-x-axis-tick-labels-in-matplotlib). 
+
+```python
+import numpy as np
+import pandas as pd
+from datetime import datetime
+
+import matplotlib.pyplot as plt
+# import matplotlib.dates as mdates
+from matplotlib.dates import DateFormatter
+
+# Create x- and y-arrays
+idx = df.resample(rule='A').mean().index.year
+y = df['Close'].resample('A').mean().values
+
+# Create plot
+ax = plt.bar(idx,y,tick_label=idx)
+```
+
+## 4.3. Time Shifting
+
+We can shift the data along the 0-axis. See [Documentation](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.shift.html).  
+
+```python
+# Empty data point in the first row and lose last data point
+df.shift(1)
+
+# Shift data points to end of the month
+df.shift(periods=1, freq='M')
+```
+
+## 4.4. Windowing Operations
+
+See [Documentation](https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html). A common process with time series is to create data based on a [rolling mean](https://en.wikipedia.org/wiki/Moving_average) -> we divide data into windows of time -> apply aggregate function for each window. 
+
+The `rolling` method behaves like `rows between n preceding and current row` in postgres. 
+
+```python
+# Plot of the closing price and its 30 moving average
+df.Close.plot(figsize=(12, 5))
+df.Close.rolling(window=30).mean().plot()
+```
+
+To add a legend to the plot, we can add the MA(30) column to the dataframe. 
+
+```python
+df['MA(30)'] = df.Close.rolling(window=30).mean()
+df.iloc[29:34:]
+#               Close   Volume     MA(30)
+# Date                                   
+# 2015-02-13  42.8942  6109522  39.835057
+# 2015-02-17  43.1050  6386900  40.005020
+# 2015-02-18  43.5593  6541986  40.214393
+# 2015-02-19  43.6390  6109176  40.436533
+# 2015-02-20  43.7982  6462662  40.633647
+df['Close MA(30)'.split()].plot(figsize=(12, 5))
+```
+
+The `expanding` method behaves like `rows between unbounded preceding and current row` in postgres. 
+
+```python
+df.Close.expanding().mean().head()
+# Date
+# 2015-01-02    38.006100
+# 2015-01-05    37.642100
+# 2015-01-06    37.419667
+# 2015-01-07    37.535950
+# 2015-01-08    37.727980
+# Name: Close, dtype: float64
+```
+
+## 4.5. Visualizing Time Series Data
+
+See [Anatomy of a figure](https://matplotlib.org/stable/gallery/showcase/anatomy.html) for more details. See notebook for reference. See [plt dates Documentation](https://matplotlib.org/stable/api/dates_api.html#date-tickers). 
+
+See also [strftime() and strptime() Behavior](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior). 
+
+```python
+# Columns have wildly different scales -> Plot the curves separately
+df.plot()
+
+# Creaate plot and set title
+ax = df.Close.plot(figsize=(12, 6), title='Close Price vs Date', grid=True)
+# Scale the graph
+ax.autoscale(axis='both', tight=True)
+# Set labels
+ax.set(xlabel='Date', ylabel='Close Price')
+
+# Filter the data and plot
+# Alternatively, pass the xlim and ylim param in the plot method
+ax = df.Close.loc['2017-01-01':'2018-12-31'].plot(figsize=(12, 4), grid=True)
+ax.autoscale(axis='both', tight=True)
+```
+
+We can also adjust the tick label: 
+
+```python
+# import dates module from plt
+from matplotlib import dates
+# Create subplot
+ax = df.Close.loc['2017-01-01':'2017-03-01'].plot(figsize=(12, 4), grid=True)
+# Scale subplot
+ax.autoscale(axis='x',tight=True)
+
+# Remove x-label
+ax.set(xlabel='')
+
+# Set location of tick labels
+ax.xaxis.set_major_locator(dates.WeekdayLocator(byweekday=0))
+# Set format of tick labels
+ax.xaxis.set_major_formatter(dates.DateFormatter('%B %d (%a)'))
+```
+
+We can also adjust the minor tick label and the grid for each axis: 
+
+```python
+# Create subplot
+ax = df.Close.loc['2017-01-01':'2017-03-01'].plot(figsize=(12, 4))
+# Scale subplot
+ax.autoscale(axis='x',tight=True)
+
+# Remove x-label
+ax.set(xlabel='')
+
+# Set location of tick labels
+ax.xaxis.set_major_locator(dates.WeekdayLocator(byweekday=0))
+# Set format of tick labels
+ax.xaxis.set_major_formatter(dates.DateFormatter('%d'))
+
+# Set location of minor tick labels
+ax.xaxis.set_minor_locator(dates.MonthLocator())
+# Set format of minor tick labels
+ax.xaxis.set_minor_formatter(dates.DateFormatter('\n\n%b'));
+
+# Show grid
+ax.xaxis.grid(True)
+```
 
 # 5. Misc 
 
