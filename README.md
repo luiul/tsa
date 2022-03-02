@@ -66,6 +66,7 @@ We will learn how to use Python for forecasting time series data to predict new 
 - [5. Time Series Analysis with Statsmodels](#5-time-series-analysis-with-statsmodels)
   - [5.1. ETS Models and Decomposition with ETS](#51-ets-models-and-decomposition-with-ets)
   - [5.2. EWMA Models](#52-ewma-models)
+  - [5.3. Holt-Winters Method](#53-holt-winters-method)
 - [6. Misc](#6-misc)
 
 </details>
@@ -1149,17 +1150,14 @@ First we'll learn how to call a function test from Stasmodels and about the Hodr
 - Seasonality: Repeating trends
 - Cyclical: Trends with no set repetition
 
-The Hodrick-Prescott filter separates a time-series `y` into a trend component `tau` and a cyclical component `c`:
+The Hodrick-Prescott filter separates a time-series `y` into a trend component `tau` and a cyclical component `c`: $`y_t = \tau_t + c_t`$
 
-$$
-y_t = \tau_t + c_t
-$$
 
 The components are determined by minimizing the following quadratic loss / cost / error function, where lambda is a smoothing parameter:
 
-$$
+```math
 \min _{\tau_{t}} \sum_{t=1}^{T} c_{t}^{2}+\lambda \sum_{t=1}^{T}\left[\left(\tau_{t}-\tau_{t-1}\right)-\left(\tau_{t-1}-\tau_{t-2}\right)\right]^{2}
-$$
+```
 
 The lambda value above handles variations in the growth rate of the trend component. 
 
@@ -1193,6 +1191,62 @@ We apply an **additive model** when it seems that the **trend** is more **linear
 A **multiplicative model** is more appropriate when we are increasing (or decreasing) at a **non-linear rate** (e.g. each year we double the amount of passengers).
 
 ## 5.2. EWMA Models
+
+See [Documentation](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.ewm.html#pandas.DataFrame.ewm). EWMA (Exponentially weighted moving average) models. We've previously seen how calculating simple moving averages can allow us to create a simple model that describes some trend level behavior of a time series. 
+
+We could expand off the idea of an SMA (simple moving average) by utilizing a EWMA (Exponentially weighted moving average). As issue with SMA is that the entire model will be constrained to the same window size.
+
+It would be nice if we could have more recent data be weighted more than older data. We do this by implementing a EWMA instead of SMA. Basic SMA has some cons:
+
+- Smaller windows will lead to more noise, rather than signal
+- It will always lag by the size of the window
+- It will never reach to full peak or valley of the data due to the averaging.
+- Does not really inform you about possible future behavior, all it really does is describe trends in your data.
+- Extreme historical values can skew your SMA significantly
+
+
+To help fix some of these issues, we can use an EWMA. EWMA will allow us to reduce the lag effect from SMA and it will put more weight on values that occurred more recently (by applying more weight to the more recent values, thus the name).
+
+The amount of weight applied to the most recent values will depend on the actual parameters used in the EWMA and the number of periods given a window size. In general a weighted moving average is described by the following formula: 
+
+```math
+y_t =   \frac{\sum\limits_{i=0}^t w_i x_{t-i}}{\sum\limits_{i=0}^t w_i}
+```
+
+We now need to define the weight function `w_i`. When the param `adjust = True` then: 
+
+```math
+y_t = \frac{x_t + (1 - \alpha)x_{t-1} + (1 - \alpha)^2 x_{t-2} + ...
++ (1 - \alpha)^t x_{0}}{1 + (1 - \alpha) + (1 - \alpha)^2 + ...
++ (1 - \alpha)^t}
+```
+
+Otherwise: 
+
+```math
+\begin{split}y_0 &= x_0 \\
+y_t &= (1 - \alpha) y_{t-1} + \alpha x_t,\end{split}
+```
+
+```math
+\begin{split}w_i = \begin{cases}
+    \alpha (1 - \alpha)^i & \text{if } i < t \\
+    (1 - \alpha)^i        & \text{if } i = t.
+\end{cases}\end{split}
+```
+
+To adjust alpha we have three different params: 
+
+```math
+\begin{split}\alpha =
+ \begin{cases}
+     \frac{2}{s + 1},               & \text{for span}\ s \geq 1\\
+     \frac{1}{1 + c},               & \text{for center of mass}\ c \geq 0\\
+     1 - \exp^{\frac{\log 0.5}{h}}, & \text{for half-life}\ h > 0
+ \end{cases}\end{split}
+```
+
+## 5.3. Holt-Winters Method
 
 Continue here! 
 
