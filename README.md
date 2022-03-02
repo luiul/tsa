@@ -64,6 +64,8 @@ We will learn how to use Python for forecasting time series data to predict new 
   - [4.5. Visualizing Time Series Data](#45-visualizing-time-series-data)
   - [4.6. Notes from Time Series with Pandas Exercise](#46-notes-from-time-series-with-pandas-exercise)
 - [5. Time Series Analysis with Statsmodels](#5-time-series-analysis-with-statsmodels)
+  - [5.1. ETS Models and Decomposition with ETS](#51-ets-models-and-decomposition-with-ets)
+  - [5.2. EWMA Models](#52-ewma-models)
 - [6. Misc](#6-misc)
 
 </details>
@@ -1124,12 +1126,75 @@ from datetime import datetime
 # import matplotlib.dates as mdates
 ```
 
-# 5. Time Series Analysis with Statsmodels
-
-Continue here! 
-
 [Timedeltas Documentation](https://pandas.pydata.org/pandas-docs/stable/user_guide/timedeltas.html). 
 
+# 5. Time Series Analysis with Statsmodels
+
+[Statsmodels Documentation](https://www.statsmodels.org/stable/index.html). [Statsmodels TSA Documentatio](https://www.statsmodels.org/stable/tsa.html)n. See also: [How to Decompose Time Series Data into Trend and Seasonality](https://machinelearningmastery.com/decompose-time-series-data-trend-seasonality/)
+
+Section Goals: 
+
+- Introduction to Statsmodels
+- ETS Decomposition
+- Moving Averages
+- Holt Winters Methods
+- Statsmodels Time Series Exercises
+
+First we'll learn how to call a function test from Stasmodels and about the Hodrick-Prescott filter. **Time series data** has particular **properties**: 
+
+- Trends:
+  - Upward: slope is positive in general (if you would average it out)
+  - Horizontal or Stationary
+  - Downward: 
+- Seasonality: Repeating trends
+- Cyclical: Trends with no set repetition
+
+The Hodrick-Prescott filter separates a time-series `y` into a trend component `tau` and a cyclical component `c`:
+
+$$
+y_t = \tau_t + c_t
+$$
+
+The components are determined by minimizing the following quadratic loss / cost / error function, where lambda is a smoothing parameter:
+
+$$
+\min _{\tau_{t}} \sum_{t=1}^{T} c_{t}^{2}+\lambda \sum_{t=1}^{T}\left[\left(\tau_{t}-\tau_{t-1}\right)-\left(\tau_{t-1}-\tau_{t-2}\right)\right]^{2}
+$$
+
+The lambda value above handles variations in the growth rate of the trend component. 
+
+Recommended lambda values for Hodrick-Prescott filter: 
+
+- **Quarterly**: 1,600
+- **Anually**: 6.25
+- **Monthly**: 129,600 
+
+## 5.1. ETS Models and Decomposition with ETS
+
+**ETS Models** (Error-Trend-Seasonality). This general term stands for a variety of different models, e.g.: 
+
+- Exponential Smoothing
+- Trend Methods Models
+- **ETS Decomposition**
+
+Statsmodels provides a seasonal decomposition tool we can use to separate out the different components. We've already seen a simplistic example of this in the Introduction to Statsmodels section with the Hodrick-Prescott filter.
+
+ETS (Error-Trend-Seasonality Models will take each of those terms for "smoothing" and may add them, multiply them, or even just leave some of them out. Based off these key factors, we can try to create a model to fit our data.
+
+Visualizing the data based off its ETS is a good way to build an understanding of its behaviour.
+
+There are two types of ETS models: 
+
+- Additive model
+- Multiplicative model 
+
+We apply an **additive model** when it seems that the **trend** is more **linear** and the **seasonality** and trend components seem to be **constant** over time (e.g. every year we add 10,000 passengers).
+
+A **multiplicative model** is more appropriate when we are increasing (or decreasing) at a **non-linear rate** (e.g. each year we double the amount of passengers).
+
+## 5.2. EWMA Models
+
+Continue here! 
 
 # 6. Misc 
 
