@@ -62,7 +62,9 @@ We will learn how to use Python for forecasting time series data to predict new 
   - [4.3. Time Shifting](#43-time-shifting)
   - [4.4. Windowing Operations](#44-windowing-operations)
   - [4.5. Visualizing Time Series Data](#45-visualizing-time-series-data)
-- [5. Misc](#5-misc)
+  - [4.6. Notes from Time Series with Pandas Exercise](#46-notes-from-time-series-with-pandas-exercise)
+- [5. Time Series Analysis with Statsmodels](#5-time-series-analysis-with-statsmodels)
+- [6. Misc](#6-misc)
 
 </details>
 
@@ -451,7 +453,7 @@ df[crit].dropna(axis='index')
 From [Documentation](https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#boolean-indexing): you may select rows from a DataFrame using a boolean vector the same length as the DataFrame’s index (for example, something derived from one of the columns of the DataFrame):
 
 ```python
-cond = df['W'] > 0
+crit = df['W'] > 0
 df[crit]
 # or
 df.loc[crit,::]
@@ -909,7 +911,9 @@ df.index.argmin()
 
 ## 4.2. Time Resampling
 
-Similar to a group operation but based on time frequency. See [Time Series / Date Documentation](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html) and [thread](https://stackoverflow.com/questions/17001389/pandas-resample-documentation). Also see [Offset Alias](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases), [Anchored Offsets](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#anchored-offsets), and [Resampling](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#resampling). Refer to the [Resample Page](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.resample.html). Some aliases can be found in the course material
+Resampling is a convenience method for frequency conversion and resampling of time series.
+
+Similar to a group operation but based on time frequency. See [Time Series / Date Documentation](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html) and [thread](https://stackoverflow.com/questions/17001389/pandas-resample-documentation). Also see [Offset Alias](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases), [Anchored Offsets](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#anchored-offsets), and [Resampling](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#resampling). Refer to the [Resample Page](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.resample.html). Some aliases can be found in the course material. 
 
 | Alias    | Description                                      |
 | -------- | ------------------------------------------------ |
@@ -1105,7 +1109,29 @@ ax.xaxis.set_minor_formatter(dates.DateFormatter('\n\n%b'));
 ax.xaxis.grid(True)
 ```
 
-# 5. Misc 
+
+## 4.6. Notes from Time Series with Pandas Exercise
+
+Libaries
+
+```python
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from datetime import datetime
+# from matplotlib.dates import DateFormatter
+# from matplotlib import dates
+# import matplotlib.dates as mdates
+```
+
+# 5. Time Series Analysis with Statsmodels
+
+Continue here! 
+
+[Timedeltas Documentation](https://pandas.pydata.org/pandas-docs/stable/user_guide/timedeltas.html). 
+
+
+# 6. Misc 
 
 **Downgrading Jupyter Lab and Conda Packages**
 
@@ -1130,3 +1156,7 @@ if __name__ == '__main__':
 **Dictionaries**
 
 6 Different ways to create Dictionaries ([source](https://thispointer.com/python-6-different-ways-to-create-dictionaries/))
+
+**Stack Overflow Threads**
+
+- [Change order of x-axis labels](https://stackoverflow.com/questions/47255746/change-order-on-x-axis-for-matplotlib-chart)
