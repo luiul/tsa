@@ -1131,7 +1131,9 @@ from datetime import datetime
 
 # 5. Time Series Analysis with Statsmodels
 
-[Statsmodels Documentation](https://www.statsmodels.org/stable/index.html). [Statsmodels TSA Documentatio](https://www.statsmodels.org/stable/tsa.html)n. See also: [How to Decompose Time Series Data into Trend and Seasonality](https://machinelearningmastery.com/decompose-time-series-data-trend-seasonality/)
+See [Forecasting: Principles and Practice](https://otexts.com/fpp2/) by Rob J Hyndman and George Athanasopoulos. 
+
+[Statsmodels Documentation](https://www.statsmodels.org/stable/index.html). [Statsmodels TSA Documentatio](https://www.statsmodels.org/stable/tsa.html)n. See also: [How to Decompose Time Series Data into Trend and Seasonality](https://machinelearningmastery.com/decompose-time-series-data-trend-seasonality/). See also the [TSA Tutorial](https://thequackdaddy.github.io/statsmodels.github.io/devel/examples/notebooks/generated/exponential_smoothing.html). 
 
 Section Goals: 
 
@@ -1150,12 +1152,15 @@ First we'll learn how to call a function test from Stasmodels and about the Hodr
 - Seasonality: Repeating trends
 - Cyclical: Trends with no set repetition
 
-The Hodrick-Prescott filter separates a time-series `y` into a trend component `tau` and a cyclical component `c`: $`y_t = \tau_t + c_t`$
+The Hodrick-Prescott filter separates a time-series `y` into a trend component `tau` and a cyclical component `c`: 
 
+```tex
+y_t = \tau_t + c_t
+```
 
 The components are determined by minimizing the following quadratic loss / cost / error function, where lambda is a smoothing parameter:
 
-```math
+```tex
 \min _{\tau_{t}} \sum_{t=1}^{T} c_{t}^{2}+\lambda \sum_{t=1}^{T}\left[\left(\tau_{t}-\tau_{t-1}\right)-\left(\tau_{t-1}-\tau_{t-2}\right)\right]^{2}
 ```
 
@@ -1192,7 +1197,7 @@ A **multiplicative model** is more appropriate when we are increasing (or decrea
 
 ## 5.2. EWMA Models
 
-See [Documentation](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.ewm.html#pandas.DataFrame.ewm). EWMA (Exponentially weighted moving average) models. We've previously seen how calculating simple moving averages can allow us to create a simple model that describes some trend level behavior of a time series. 
+See [Pandas Documentation](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.ewm.html#pandas.DataFrame.ewm). See [Statsmodels Documentation](https://www.statsmodels.org/stable/examples/notebooks/generated/exponential_smoothing.html). EWMA (Exponentially weighted moving average) models. We've previously seen how calculating simple moving averages can allow us to create a simple model that describes some trend level behavior of a time series. 
 
 We could expand off the idea of an SMA (simple moving average) by utilizing a EWMA (Exponentially weighted moving average). As issue with SMA is that the entire model will be constrained to the same window size.
 
@@ -1209,13 +1214,13 @@ To help fix some of these issues, we can use an EWMA. EWMA will allow us to redu
 
 The amount of weight applied to the most recent values will depend on the actual parameters used in the EWMA and the number of periods given a window size. In general a weighted moving average is described by the following formula: 
 
-```math
+```tex
 y_t =   \frac{\sum\limits_{i=0}^t w_i x_{t-i}}{\sum\limits_{i=0}^t w_i}
 ```
 
 We now need to define the weight function `w_i`. When the param `adjust = True` then: 
 
-```math
+```tex
 y_t = \frac{x_t + (1 - \alpha)x_{t-1} + (1 - \alpha)^2 x_{t-2} + ...
 + (1 - \alpha)^t x_{0}}{1 + (1 - \alpha) + (1 - \alpha)^2 + ...
 + (1 - \alpha)^t}
@@ -1223,32 +1228,74 @@ y_t = \frac{x_t + (1 - \alpha)x_{t-1} + (1 - \alpha)^2 x_{t-2} + ...
 
 Otherwise: 
 
-```math
+```tex
 \begin{split}y_0 &= x_0 \\
 y_t &= (1 - \alpha) y_{t-1} + \alpha x_t,\end{split}
 ```
 
-```math
-\begin{split}w_i = \begin{cases}
+```tex
+\begin{split}
+  w_i = \begin{cases}
     \alpha (1 - \alpha)^i & \text{if } i < t \\
     (1 - \alpha)^i        & \text{if } i = t.
-\end{cases}\end{split}
+  \end{cases}
+\end{split}
 ```
 
 To adjust alpha we have three different params: 
 
-```math
+```tex
 \begin{split}\alpha =
  \begin{cases}
      \frac{2}{s + 1},               & \text{for span}\ s \geq 1\\
      \frac{1}{1 + c},               & \text{for center of mass}\ c \geq 0\\
      1 - \exp^{\frac{\log 0.5}{h}}, & \text{for half-life}\ h > 0
- \end{cases}\end{split}
+ \end{cases}
+\end{split}
 ```
 
 ## 5.3. Holt-Winters Method
 
-Continue here! 
+Previously with EWMA we applied Simple Exponential Smoothing using just one smoothing factor alpha. This failed to account for other contributing factors like trend and seasonality.
+
+The Holt-Winters seasonal method comprises of the forecast equation and three smoothing equations.
+
+One for the level `l_t`, one for the trend `b_t`, and one for the seasonal component `s_t`, with corresponding smoothing parameters alpha, beta, and gamma.
+
+There are two variations to this method that differ in the nature of the seasonal component: the **additive method** is preferred when the seasonal variations are roughly constant through the series, while the **multiplicative method** is preferred when the seasonal variations are changing proportional to the level of the series.
+
+We start with a **Single Exponential Smoothing**: 
+
+```tex
+y_0 = X_0
+y_t = (1-\alpha)y_{t-1} + \alpha x_t
+```
+
+We can expand this to a **Double Exponential Smoothing**. In Double Exponential Smoothing (aka Holt's Method) we introduc a new smoothing factor beta that addresses trend:
+
+```tex
+\text{level: } l_t =(1-\alpha)l_{t-1}1+\alpha x,,
+\text{trend: } b_t = (1-\beta)b_{t-1}+ \beta(l_t-t_{t-1})
+\text{fitted model: } y_t = l_t + b_t
+\text{forecasting model: } \hat{y}_{t+h} = l_t + hb_t,~ h \text{ is the periods into the future}
+```
+
+In this method we do not take into account a seasonal component. With Triple Exponential Smoothing (aka the Holt-Winters Method) we introduce a smoothing factor gamma that addresses seasonality:
+
+```tex
+\begin{aligned}
+\text{level: }l_{t} &=(1-\alpha) l_{t-1}+\alpha x_{t}, \\
+\text{trend: }b_{t} &=(1-\beta) b_{t-1}+\beta\left(l_{t}-l_{t-1}\right) \\
+\text{seasonal: }c_{t} &=(1-\gamma) c_{t-L}+\gamma\left(x_{t}-l_{t-1}-b_{t-1}\right) \\
+\text{fitted model: }y_{t} &=\left(l_{t}+b_{t}\right) c_{t} \\
+\text{forecasting model: }\hat{y}_{t+m} &=\left(l_{t}+m b_{t}\right) c_{t-L+1+(m-1) \bmod L},~m \text{ is the periods into the future}
+\end{aligned}
+```
+
+Here L represents the number of divisions per cycle. In our case looking at monthly data that displays a repeating pattern each year, we would use L=12. 
+
+We need to set the frequency of the index to use this method. See [Offset Aliases](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html). See also this [github thread](https://github.com/unit8co/darts/issues/241) if the methods does not converge. 
+
 
 # 6. Misc 
 
