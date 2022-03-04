@@ -1,6 +1,5 @@
-name: tsa_course
-channels:
-  - defaults
+name: tsa
+
 dependencies:
   - numpy=1.15.4
   - pandas=0.23.4
@@ -22,4 +21,3 @@ dependencies:
     - pmdarima==1.1.0
     - tensorflow
     - keras
-prefix: C:\Anaconda3\envs\tsa_course

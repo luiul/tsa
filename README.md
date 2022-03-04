@@ -67,7 +67,11 @@ We will learn how to use Python for forecasting time series data to predict new 
   - [5.1. ETS Models and Decomposition with ETS](#51-ets-models-and-decomposition-with-ets)
   - [5.2. EWMA Models](#52-ewma-models)
   - [5.3. Holt-Winters Method](#53-holt-winters-method)
-- [6. Misc](#6-misc)
+- [6. General Forecasting Models](#6-general-forecasting-models)
+  - [6.1. Intro to Forecasting Models](#61-intro-to-forecasting-models)
+    - [6.1.1. Test Train Split](#611-test-train-split)
+- [7. Misc](#7-misc)
+  - [7.1. How to Decompose Time Series Data into Trend and Seasonality](#71-how-to-decompose-time-series-data-into-trend-and-seasonality)
 
 </details>
 
@@ -1131,6 +1135,30 @@ from datetime import datetime
 
 # 5. Time Series Analysis with Statsmodels
 
+Libraries of this section: 
+
+```python
+import numpy as np
+import pandas as pd
+# from matplotlib import dates
+import matplotlib.pyplot as plt
+from datetime import datetime
+import pylab
+import seaborn as sns
+# import statsmodels.api as sm
+sns.set_style("whitegrid")
+pylab.rc("figure", figsize=(16, 8))
+pylab.rc("font", size=14)
+```
+
+```python
+from statsmodels.tsa.filters.hp_filter import hpfilter
+from statsmodels.tsa.seasonal import seasonal_decompose
+from statsmodels.tsa.holtwinters import SimpleExpSmoothing
+from statsmodels.tsa.holtwinters import ExponentialSmoothing
+```
+
+
 See [Forecasting: Principles and Practice](https://otexts.com/fpp2/) by Rob J Hyndman and George Athanasopoulos. 
 
 [Statsmodels Documentation](https://www.statsmodels.org/stable/index.html). [Statsmodels TSA Documentatio](https://www.statsmodels.org/stable/tsa.html)n. See also: [How to Decompose Time Series Data into Trend and Seasonality](https://machinelearningmastery.com/decompose-time-series-data-trend-seasonality/). See also the [TSA Tutorial](https://thequackdaddy.github.io/statsmodels.github.io/devel/examples/notebooks/generated/exponential_smoothing.html). 
@@ -1296,8 +1324,43 @@ Here L represents the number of divisions per cycle. In our case looking at mont
 
 We need to set the frequency of the index to use this method. See [Offset Aliases](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html). See also this [github thread](https://github.com/unit8co/darts/issues/241) if the methods does not converge. 
 
+# 6. General Forecasting Models
 
-# 6. Misc 
+Section Overview: 
+
+- Introduction to Forecasting
+- ACF and PACF plots
+- Auto Regression AR
+- Descriptive Statistics and Tests
+- Choosing ARIMA orders
+- ARIMA based models
+
+Standard Forecasting Procedure: 
+
+- Choose a **Model**
+- **Split** data into train and test sets
+- **Fit** model on training set
+- **Evaluate** model on test set
+- **Re-fit** model on entire data set
+- **Forecast** for future data
+
+## 6.1. Intro to Forecasting Models
+
+Libraries for this section: 
+
+```python
+from statsmodels.tsa.holtwinters import ExponentialSmoothing
+```
+
+### 6.1.1. Test Train Split
+
+Test sets will be the most recent end of the data (see [sklearn TimeSeriesSplit](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html))
+
+The size of the test set is typically about 20% of the total sample, although this value depends on how long the sample is and how far ahead you want to forecast. **The test set should ideally be at least as large as the maximum forecast horizon required**. Keep in mind, the longer the forecast horizon, the more likely your prediction becomes less accurate.
+
+# 7. Misc 
+
+[regex101](https://regex101.com/)
 
 **Downgrading Jupyter Lab and Conda Packages**
 
@@ -1326,3 +1389,13 @@ if __name__ == '__main__':
 **Stack Overflow Threads**
 
 - [Change order of x-axis labels](https://stackoverflow.com/questions/47255746/change-order-on-x-axis-for-matplotlib-chart)
+
+## 7.1. How to Decompose Time Series Data into Trend and Seasonality
+
+Time series decomposition involves thinking of a series as a combination of the following components. 
+
+- level
+- trend
+- seasonality
+- noise
+
