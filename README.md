@@ -64,12 +64,17 @@ We will learn how to use Python for forecasting time series data to predict new 
   - [4.5. Visualizing Time Series Data](#45-visualizing-time-series-data)
   - [4.6. Notes from Time Series with Pandas Exercise](#46-notes-from-time-series-with-pandas-exercise)
 - [5. Time Series Analysis with Statsmodels](#5-time-series-analysis-with-statsmodels)
-  - [5.1. ETS Models and Decomposition with ETS](#51-ets-models-and-decomposition-with-ets)
-  - [5.2. EWMA Models](#52-ewma-models)
-  - [5.3. Holt-Winters Method](#53-holt-winters-method)
+  - [5.1. Libraries of this section:](#51-libraries-of-this-section)
+  - [5.2. ETS Models and Decomposition with ETS](#52-ets-models-and-decomposition-with-ets)
+  - [5.3. EWMA Models](#53-ewma-models)
+  - [5.4. Holt-Winters Method](#54-holt-winters-method)
 - [6. General Forecasting Models](#6-general-forecasting-models)
-  - [6.1. Intro to Forecasting Models](#61-intro-to-forecasting-models)
-    - [6.1.1. Test Train Split](#611-test-train-split)
+  - [6.1. Libraries for this section:](#61-libraries-for-this-section)
+  - [6.2. Intro to Forecasting Models](#62-intro-to-forecasting-models)
+    - [6.2.1. Test Train Split](#621-test-train-split)
+    - [6.2.2. Evaluating Predictions](#622-evaluating-predictions)
+  - [6.3. Auto-Corr Function (ACF) and Partial Auto-Corr Function (PACF)](#63-auto-corr-function-acf-and-partial-auto-corr-function-pacf)
+  - [6.4. ARIMA](#64-arima)
 - [7. Misc](#7-misc)
   - [7.1. How to Decompose Time Series Data into Trend and Seasonality](#71-how-to-decompose-time-series-data-into-trend-and-seasonality)
 
@@ -1135,9 +1140,10 @@ from datetime import datetime
 
 # 5. Time Series Analysis with Statsmodels
 
-Libraries of this section: 
+## 5.1. Libraries of this section: 
 
 ```python
+# General
 import numpy as np
 import pandas as pd
 # from matplotlib import dates
@@ -1152,6 +1158,7 @@ pylab.rc("font", size=14)
 ```
 
 ```python
+# Forecasting Models
 from statsmodels.tsa.filters.hp_filter import hpfilter
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.tsa.holtwinters import SimpleExpSmoothing
@@ -1200,7 +1207,7 @@ Recommended lambda values for Hodrick-Prescott filter:
 - **Anually**: 6.25
 - **Monthly**: 129,600 
 
-## 5.1. ETS Models and Decomposition with ETS
+## 5.2. ETS Models and Decomposition with ETS
 
 **ETS Models** (Error-Trend-Seasonality). This general term stands for a variety of different models, e.g.: 
 
@@ -1223,7 +1230,7 @@ We apply an **additive model** when it seems that the **trend** is more **linear
 
 A **multiplicative model** is more appropriate when we are increasing (or decreasing) at a **non-linear rate** (e.g. each year we double the amount of passengers).
 
-## 5.2. EWMA Models
+## 5.3. EWMA Models
 
 See [Pandas Documentation](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.ewm.html#pandas.DataFrame.ewm). See [Statsmodels Documentation](https://www.statsmodels.org/stable/examples/notebooks/generated/exponential_smoothing.html). EWMA (Exponentially weighted moving average) models. We've previously seen how calculating simple moving averages can allow us to create a simple model that describes some trend level behavior of a time series. 
 
@@ -1282,7 +1289,7 @@ To adjust alpha we have three different params:
 \end{split}
 ```
 
-## 5.3. Holt-Winters Method
+## 5.4. Holt-Winters Method
 
 Previously with EWMA we applied Simple Exponential Smoothing using just one smoothing factor alpha. This failed to account for other contributing factors like trend and seasonality.
 
@@ -1326,6 +1333,22 @@ We need to set the frequency of the index to use this method. See [Offset Aliase
 
 # 6. General Forecasting Models
 
+## 6.1. Libraries for this section: 
+
+```python
+# Forecasting Models
+from statsmodels.tsa.holtwinters import ExponentialSmoothing
+# Metrics: Evaluating Predicitions 
+from sklearn.metrics import mean_absolute_error, mean_squared_error
+# Autocorrelation
+import statsmodels.api as sm
+from statsmodels.tsa.stattools import acovf, acf, pacf, pacf_yw, pacf_ols
+# import warnings
+# warnings.filterwarnings('ignore')
+# Lag Plot
+from pandas.plotting import lag_plot
+```
+
 Section Overview: 
 
 - Introduction to Forecasting
@@ -1344,19 +1367,85 @@ Standard Forecasting Procedure:
 - **Re-fit** model on entire data set
 - **Forecast** for future data
 
-## 6.1. Intro to Forecasting Models
+## 6.2. Intro to Forecasting Models
 
-Libraries for this section: 
 
-```python
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
-```
-
-### 6.1.1. Test Train Split
+### 6.2.1. Test Train Split
 
 Test sets will be the most recent end of the data (see [sklearn TimeSeriesSplit](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html))
 
 The size of the test set is typically about 20% of the total sample, although this value depends on how long the sample is and how far ahead you want to forecast. **The test set should ideally be at least as large as the maximum forecast horizon required**. Keep in mind, the longer the forecast horizon, the more likely your prediction becomes less accurate.
+
+### 6.2.2. Evaluating Predictions
+
+After we fit model on the training data, we forecast to match up to the test data dates. Then we can compare our results for evaluation.
+
+You may have heard of some evaluation metrics like accuracy or recall. These sort of metrics aren't useful for time series forecasting problems, we need metrics designed for **continuous** values!
+
+Let's discuss some of the most common evaluation metrics for regression:
+
+- Mean Absolute Error (**MAE**)
+- Mean Squared Error (**MSE**)
+- Root Mean Square Error (**RMSE**)
+
+Whenever we perform a forecast for a continuous value on a test set, we have two values:
+
+- `y` the value of the observation (in the test data)
+- `y_hat` the predicted value from our forecast
+
+Mean Absolute Error (MAE) This is the mean of the absolute value of errors: Easy to understand. 
+
+```tex
+\frac{1}{n} \sum_{i=1}^{n}\left|y_{i}-\hat{y}_{i}\right|
+```
+
+An issue with MAE though, is that simply averaging the residuals won't alert us if the forecast was really off fo a few points. We want to be aware of any prediction errors that are very large (even if there only a few). 
+
+Mean Squared Error (MSE): This is the mean of the squared errors. Larger errors are noted more than with MAE making MSE more popular.
+
+```tex
+\frac{1}{n} \sum_{i=1}^{n}\left(y_{i}-\hat{y}_{i}\right)^{2}
+```
+
+There is an issue with MSE however! Because we squared the residual, the units are now also squared which is hard to interpret!
+
+Root Mean Square Error (RMSE): This is the root of the mean of the squared errors. Most popular (has same units as y). 
+
+```tex  
+\sqrt{\frac{1}{n} \sum_{i=1}^{n}\left(y_{i}-\hat{y}_{i}\right)^{2}}
+```
+
+## 6.3. Auto-Corr Function (ACF) and Partial Auto-Corr Function (PACF)
+
+Let's learn about 2 very useful plot types 
+
+- ACF AutoCorrelation Function Plot
+- PACF Partial AutoCorrelation Function Plot
+
+To understand these plots, we first need to understand **correlation**. Correlation is a measure of the strength of the linear relationship between two variables. The closer the correlation is to +1, the stronger the positive linear relationship The closer the correlation is to-1, the stronger the negative linear relationship. And the closer the correlation is to zero, the weaker the linear relationship. 
+
+An **autocorrelation** plot (also known as a Correlogram) shows the correlation of the series with itself, lagged by t time units. So the y axis the correlation and the x axis is the number of time units of lag.
+
+Imagine we had some sales data. We can compare the standard sales data against the sales data shifted by 1 time step. This answers the question, **"How correlated are today's sales to yesterday's sales?**"
+
+We consider `y = Sales on Day t` vs `x = Sales on Day t-1` and calculate the correlation. We then plot the corr value on the plot `y = Autocorr` vs `x = Shift`. 
+
+An autocorrelation plot shows the correlation of the series with itself, lagged by X time units. You go on and do this for all possible time lags x and this defines the plot. Typical examples: 
+
+- Gradual decline: Common for seasonal data. The distance between peaks represent the season period
+- Sharp Drop-off: After a couple of shifts the corr rapidly drops
+
+It makes sense that in general there is a decline of some sort, the further away you get with the shift, the less likely the time series would be correlated with itself.
+
+For the partial autocorr plot, we essentially plot out the relationship between `y = previous day's residuals` vs the `real values of the current day`. In general we expect the partial autocorrelation to drop off quite quickly.
+
+The ACF describes the autocorrelation between an observation and another observation at a prior time step that includes direct and indirect dependence information. The PACF only describes the direct relationship between an observation and its lag.
+
+These two plots can help choose order parameters for ARIMA based models. Later on, we will see that it is usually much easier to perform a **grid search** of the parameter values, rather than attempt to read these plots directly.
+
+## 6.4. ARIMA
+
+Continue here! 
 
 # 7. Misc 
 
@@ -1364,11 +1453,16 @@ The size of the test set is typically about 20% of the total sample, although th
 
 **Downgrading Jupyter Lab and Conda Packages**
 
-We downgrade jupyter lab from 3.2 to 3.1 to increase contextual help performance. 
+We downgrade jupyter lab from 3.2 to 3.1 to increase contextual help performance. We also install seaborn and a formatter. 
 
 ```shell
 conda install -c conda-forge jupyterlab=3.1.19
+conda install -c conda-forge seaborn==0.11.0
+conda install -c conda-forge jupyterlab_code_formatter
 ```
+ 
+We also install seaborn. 
+
 
 **If-Name-Equals_Main Idiom**
 
